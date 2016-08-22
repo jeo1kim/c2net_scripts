@@ -1,0 +1,20 @@
+#!/bin/bash
+
+
+installc2net(){
+    echo "Installing to device $1"
+    echo "Executing adb -s $1 install app-debug.apk"
+    adb -s $1 install -r /Users/euiwonkim/c2net/android_c2net/app/build/outputs/apk/app-debug.apk
+    echo "Completed Install on device $1."
+}
+
+devices=`adb devices | cut -f1 -s`
+
+for d in $devices
+do 
+    installc2net $d &
+done
+
+wait
+
+echo "DONE"
