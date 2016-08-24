@@ -1,0 +1,130 @@
+#!/bin/bash
+#script to command raspberry pi
+
+
+USER=pi
+case "$1" in
+
+
+gvine)
+	NODE=node-$i
+	if [ ! -z "$2" ]; then 
+	  for ((i=1; i<=$2; i++))
+	  do gnome-terminal -x ssh node-$i "cd /home/$USER/test/pi/gvine/node-$i/ && java -jar gvine-java.jar $i 20"
+	  done
+	  sleep 3
+	else
+	  echo "forgot second argument"
+	fi
+	;;
+
+gvine_stat)
+	NODE=node-$i
+	if [ ! -z "$2" ]; then 
+	  for ((i=1; i<=$2; i++))
+	  do gnome-terminal -x ssh node-$i "cd /home/$USER/test/pi/gvine/node-$i/ && java -jar gvine-stats.jar $i 14"
+	  done
+	  sleep 3
+	else
+	  echo "forgot second argument"
+	fi
+	;;
+
+
+
+adhoc) 
+	NODE=node-$i
+	if [ ! -z "$2" ]; then 
+	  for ((i=1; i<=$2; i++))
+	  do gnome-terminal -x ssh node-$i "gvine_join start"
+	  done
+	else
+	  echo "forgot second argument"
+	fi
+	;;
+
+
+stop)
+	NODE=node-$i
+	if [ ! -z "$2" ]; then 
+	  for ((i=1; i<=$2; i++))
+	  do ssh node-$i "sudo shutdown -r now"
+	  done
+	else
+	  echo "forgot second argument"
+	fi
+	;;
+start)
+	if [ ! -z "$2" ]; then 
+	  for ((i=1; i<=$2; i++))
+	  do gnome-terminal --command="ssh node-$i" -x "cd test/$USER/gvine/node-$1" 
+	  done
+	else
+	  echo "forgot second argument"
+	fi
+	;;
+find) 
+	NODE=node-$i
+	for i in {1..13}
+	do 
+	FIND=$(ssh node-$i find /home/$USER/test/pi/gvine/node-$i/$2) 
+
+	ssh node-$i find /home/$USER/test/pi/gvine/node-$i/ \ -name $2
+	if [ ! -f $FIND ]
+	then
+	ssh node-$i cat /home/$USER/test/pi/gvine/node-$i/delay.txt
+	fi
+	done
+	;;
+
+find2) 
+	NODE=node-$i
+	for i in {1..13}
+	do 
+	ssh node-$i find /home/$USER/test/pi/gvine/node-$i/ \ -name $2
+	ssh node-$i cat /home/$USER/test/pi/gvine/node-$i/delay.txt
+	eval $FIND
+	done
+	;;
+
+remove) 
+	NODE=node-$i
+	for i in {1..13}
+	do 
+	ssh node-$i "rm /home/$USER/test/pi/gvine/node-$i/$2"
+	eval $FIND
+	done
+	;;
+
+
+pushjar)
+
+	NODE=node-$i
+	for i in {1..13}
+	do
+	scp ~/gvine/out/artifacts/*.jar node-$i:/home/$USER/test/pi/gvine/node-$i
+	done
+	;;
+clean)
+	for i in {1..13}
+	do
+	ssh node-$i "rm /home/$USER/test/pi/gvine/node-$i/*"
+	done 
+	echo "Removed all files from the Pies"
+	;;
+*)
+	echo "Usage: commandpi {
+		|start # of pies
+		|stop
+		|find 'filename.ext'
+		|clean
+		|pushjar
+		|adhoc 
+		|remove 'filename'
+		}"
+	;;
+	
+
+esac
+
+exit 0

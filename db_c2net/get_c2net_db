@@ -1,0 +1,20 @@
+#!/bin/bash
+
+pulldb(){
+    echo "Pulling db from device $1"
+    adb -s $1 pull sdcard/com.maxentric.storylist/data/statistic2.db .
+    adb -s $1 pull sdcard/com.maxentric.storylist/data/statistic1.db .
+    adb -s $1 pull sdcard/com.maxentric.storylist/data/statistic3.db .
+    echo "Complete pulling from device $1"
+}
+
+devices=`adb devices | cut -f1 -s`
+
+for d in $devices
+    do
+        pulldb $d &
+    done
+
+    wait
+
+    echo "DONE"

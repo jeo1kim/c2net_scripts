@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+# join_gvine_adhoc: network configuration to join adhoc c2net
+
+USER=pi
+HOME=/home/pi
+
+case "$1" in 
+    start)
+
+        #####  inet6 addr: fe80::d29c:a2f6:f8b6:d41e/64 Scope:Link 
+        #####  might have to set this in the configuration
+
+        echo Starting c2net gvine adhoc Network...
+        sudo killall dhclient
+	sudo service network-manager stop
+	sudo service networking stop
+		sleep 1
+	sudo ifconfig wlp3s0 down
+       # sudo systemctl daemon-reload
+        echo Set type to adhoc
+        sudo iw dev wlp3s0 set type adhoc
+        sleep 1
+	sudo ifup wlp3s0
+        echo wlp3s0 link up
+	sudo iwconfig wlp3s0 essid c2netgvine ap 10:10:10:10:10:11
+        
+#sudo iw dev wlp3s0 ibss join c2netgvine 2412 10:10:10:10:10:11 mcast-rate 11
+        sleep 2
+		echo pi1 joining c2netgvine... as 192.168.4.100
+        sudo ifconfig wlp3s0 192.168.4.100 
+        sleep 1
+	sudo ifup wlp3s0
+        ;;
+stop)
+	echo Restoring Network
+	sudo service network-manager restart
+	sudo service networking restart
+	;;  
+stp)
+        echo Restoring Network configuration
+		sleep 1
+        sudo ip link set wlp3s0 down
+		sleep 1
+        sudo iw dev wlp3s0 set type managed
+		sleep 1
+        sudo iwconfig wlp3s0 essid "MaXnet"
+		sleep 1	
+        sudo iwconfig wlp3s0 ap 90:72:40:18:9d:20 
+		sleep 1        
+	sudo ifconfig wlp3s0 0.0.0.0 0.0.0.0 && dhclient	
+	#sudo ifconfig wlp3s0 192.168.12.243 netmask 255.255.255.0
+		sleep 1
+        sudo service networking start
+		sleep 1
+        sudo ifup --force wlp3s0
+        ;;
+
+	*)
+		echo "Usage: join_gvine {start|stop}"
+		;;
+esac
+
+exit 0
+
+
+
